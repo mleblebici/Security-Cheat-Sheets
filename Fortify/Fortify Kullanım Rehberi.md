@@ -25,6 +25,7 @@
 Fortify Source Code Analyzer (SCA) farklı dillerde yazılmış uygulamaların kaynak kod analizini gerçekleştirmektedir. Kaynak kod analizi yapılacak projenin kullandığı dilden bağımsız olarak Fortify SCA iki adımda analizini gerçekleştirmektedir. İlk adım translation aşamasıdır ve bu aşamada Fortify kodu kendi anlayabileceği intermediate bir dile çevirmektedir. Daha sonra ise scan aşaması ile bu kodu taramaktadır. Genellikle taramalarda zaman alan ve uğraştıran kısım translation aşamasıdır. Bu aşamada oluşabilecek problemlerin büyük çoğunluğu uygulamanın kullandığı kütüphanelerin Fortify SCA’ya belirtilmemesinden kaynaklanmaktadır.
 
 <a name="p2"/>
+
 ## Maven ile Derlenen Java Projelerinin Taranması
 Maven ile derlenebilen projeler Fortify maven plugini sayesinde taranabilmektedir. Bunun için öncelikle makine üzerinde maven yüklü olmalıdır. Maveni yüklemen için:
 * Apache maven sitesinden zip dosyası indirilir.
@@ -74,22 +75,26 @@ Burada önemli olan mirror etiketi içerisinde url kısmında belirtilen dosya y
 **NOT**: Fortify maven plugini kullanılamıyorsa, kodun translate aşamasını hızlandırmak için proje maven ile derlenebilir ve sonrasında sourceanalyzer class path değişkenine maven repositorylerinin bulunduğu dizin eklenebilir. Böylece projede kullanılacak jar dosyaları maven aracılığıyla temin edilmiş olur. Maven repository dizini genelde C:\Users\Username\.m2\repository dizini altında bulunmaktadır.
 
 <a name="p3"/>
+
 ## Python ile Yazılmış Projelerin Taranması
 **NOT**: Fortify şu an için sadece 2.7 sürümüne kadar desteklemektedir. Fakat, 3.0 ile yazılan projelere ait kodlar 2.7 versiyonuna convert edilerek analiz edilebilmektedir. Fakat sonuçlar incelenirken bu durum göz önünde bulundurulmalıdır.
 
 Python ile yazılmış projeler taranırken öncelikle projenin hangi python sürümüyle yazıldığının bilinmesi gerekmektedir. Daha sonra ilgili python sürümü analizin yapılacağı makineye yüklenmelidir. SCA python uygulamalarını derlerken projede kullanılan tüm kütüphanelerin lokale indirilmesini gerektirmektedir. Bu yüzden translation aşaması çok uzun sürebilmektedir. Projede kullanılan kütüphanelerin bulundukları dizin bilgisi ve python sürümünün yüklendiği dizin sourceanalyzer komutuna **–python-path** parametresiyle ; ile ayrılarak verilmelidir. Kodun taranması ve raporun oluşturulması aşamasında ayrıca bir parametre verilmesine gerek olmamaktadır, -scan –f parametreleriyle doğrudan yapılabilmektedir.
 
 <a name="p4"/>
+
 ## Fortify SCA'nın MAC OS Üzerinde Kurulumu
 MACOS iso dosyası mount edilir. MACOS klasörü içerisindeki zip dosyası extract edilir ve içindeki Application dosyasına çift tıklanır. SCA kurulum ekranında  lisans sözleşmesi kabul edilir ve lisans dosyasının yol bilgisi sağlanır ve sonrasında next diyerek kurulum tamamlanır. Komut satırından sourceanalyzer komutu çalıştırılarak kurulumun tamamlanıp tamamlanmadığı test edilebilir.
 
 <a name="p5"/>
+
 ## Android Mobil Uygulama Kaynak Kod Analizi
 Android mobil uygulamaları kod analizi MAC OS üzerinde kurulu olan Android Studio’nun Fortify plugini aracılığı ile yapılabilmektedir. Android Studio yüklendikten sonra Android Studio/Preferences/Plugins tabına gidilir. Install Plugin from disk butonuna basılarak Fortify SCA’nın yüklü olduğu dizinde plugins klasörünün altında intellij klasörü altındaki dosya seçilir. Sonrasında OK butonuna basılarak Android Studio uygulaması yeniden başlatılır. Yeniden başlatıldıktan sonra Android Studio üzerinde üst kısımda Fortify sekmesinin geldiği kontrol edilmelidir.
 
 Bundan sonra Android projelerinin kaynak kod analizi yapılırken öncelikle kod Android Studio üzerinden derlenir. Kod derlendikten sonra yukarıdaki Fortify sekmesinden scan Project’e basılarak kodun kaynak kod analizi yapılabilmektedir.
 
 <a name="p6"/>
+
 ## iOS Uygulamalarının Kaynak Kod Analizi
 
 Fortify SCA, XCode 7.3 ve öncesi sürümleri desteklemektedir. Bu yüzden XCode plugini aracılığıyla kaynak kod analizi yapılmak isteniyorsa, XCode 7.3 önceden makine üzerine yüklenmelidir. Xcode 7.3 Fortify plugini yüklemek için öncelikle XCode 7.3 yüklenmelidir. Yükleme sonrasında FortifyScanningPlugin.xcplugin ile ilgili bir uyarı mesajı çıkacaktır. Bu mesajda Load Bundle seçeneği seçilerek Fortify XCode plugini yüklenebilmektedir. Bu şekilde Plugin yüklendikten sonra XCode ile açılan derlenmiş kod, yukarıdaki menüde bulunan Fortify sekmesi kullanılarak taranabilmektedir. Plugin üzerinden yapılan taramalarda translation aşamasında oluşan uyarılar göz ardı edilmektedir. Bu yüzden bazı durumlarda kodun tamamı analiz edilememektedir. Bu tür durumlardan kaçınmak için her zaman plugin üzerinden taranan projeler –show-loc, -show-files ve –show-build-warnings parametreleriyle komut satırından incelenmelidir. Eğer uyarı çoksa tarama komut satırı üzerinden tekrar yapılmalıdır.
@@ -109,6 +114,7 @@ sourceanalyzer –b buildID –logfile scan.log –scan –f ProjectName.fpr
 ```
 
 <a name="p7"/>
+
 ## Java Uygulamalarının Kaynak Kod Analizi
 Java uygulamalarının kaynak kod analizi yapılmadan önce uygulamanın kullandığı harici jar dosyaları elde edilmelidir. Bu dosyalar belirli bir dizinde toplanmalı ve Fortify SCA’ya özel olarak belirtilmelidir. Bu işlem için –cp parametresi kullanılmaktadır. Bu parametreden sonra uygulamanın kullandığı jar dosyalarının yol bilgisi sağlanmaktadır.
 
@@ -120,6 +126,7 @@ sourceanalyzer –b JavaProject –scan –f JavaProject.fpr –logfile scan.log
 ```
 
 <a name="p8"/>
+
 ## ASP.NET Projelerinin Kaynak Kod Analizi
 ASP.NET Projelerinin kaynak kod analizi için Visual Studio Developer Command Prompt kullanılmalıdır. Bu sayede aksi halde alınacak pek çok warning ortadan kalkmaktadır. Solution dosyaları bulunan projeler için aşağıdaki komutlar aracılığıyla kaynak kod analizi gerçekleştirilebilmektedir. Öncelikle solution (.sln) dosyasının bulunduğa dizine Developer Command Prompt ile giderek aşağıdaki komutu çalıştırınız.
 
@@ -140,6 +147,7 @@ sourceanalyzer –b slnProject –logfile scan.log –scan –f slnProject.fpr
 ```
 
 <a name="p9"/>
+
 ## Make ile Derlenen Projelerin Kaynak Kod Analizi
 Bu projelerin kaynak kod analizi Linux makine üzerinde çok daha kolay yapılabilmektedir. Bunun için Fortify SCA yüklü Linux makine üzerinde aşağıdaki komutlar çalıştırılabilir.
 
@@ -150,6 +158,7 @@ sourceanalyzer –b Project –scan –f Project.fpr –logfile scan.log
 ```
 
 <a name="p10"/>
+
 ## Fortify SCA Yardımcı Komutlar
 * Fortify SCA üzerinde bulunan tüm taramaları listelemek için aşağıdaki komut çalıştırılır.
 
