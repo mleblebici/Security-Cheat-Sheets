@@ -20,6 +20,7 @@
 [Fortify SCA Yardımcı Komutlar](#p10)
 
 <a name="p1"/>
+
 # FORTIFY SCA
 Fortify Source Code Analyzer (SCA) farklı dillerde yazılmış uygulamaların kaynak kod analizini gerçekleştirmektedir. Kaynak kod analizi yapılacak projenin kullandığı dilden bağımsız olarak Fortify SCA iki adımda analizini gerçekleştirmektedir. İlk adım translation aşamasıdır ve bu aşamada Fortify kodu kendi anlayabileceği intermediate bir dile çevirmektedir. Daha sonra ise scan aşaması ile bu kodu taramaktadır. Genellikle taramalarda zaman alan ve uğraştıran kısım translation aşamasıdır. Bu aşamada oluşabilecek problemlerin büyük çoğunluğu uygulamanın kullandığı kütüphanelerin Fortify SCA’ya belirtilmemesinden kaynaklanmaktadır.
 
