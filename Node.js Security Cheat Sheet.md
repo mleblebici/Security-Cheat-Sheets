@@ -1,69 +1,11 @@
-# Node.js Security Cheat Sheet
-This document lists the things one can use when developing secure Node.js applications. Each item has a brief explanation and solution that is specific to Node.js environment. For those who do not want to see these details and see only a list of items, a table of contents is provided below. 
+# Introduction
+This document lists the things one can use when developing secure Node.js applications. Each item has a brief explanation and solution that is specific to Node.js environment. 
 
-Your contributions and suggestions are welcome. You can make pull requests, if you want to add new items to the list or if you want to update the content of an item.
-
-# Table of Contents
-[Keep your packages up-to-date](#p1)
-
-[Use security related headers](#p2)
-
-[Take precautions against brute-forcing](#p3)
-
-[Set cookie flags appropriately](#p4)
-
-[Use CSRF tokens](#p5)
-
-[Do not use dangerous functions](#p6)
-
-[Stay away from evil regexes](#p7)
-
-[Remove unnecessary routes](#p8)
-
-[Check authorization at each step](#p9)
-
-[Do not block the event loop](#p10)
-
-[Prevent HTTP Parameter Pollution](#p11)
-
-[Prefer certified modules](#p12)
-
-[Run security linters periodically](#p13)
-
-[Use flat Promise chains](#p14)
-
-[Return sanitized user objects](#p15)
-
-[Set request size limits](#p16)
-
-[Use strict mode](#p17)
-
-[Use object property descriptors](#p18)
-
-[Handle errors in asynchronous calls](#p19)
-
-[Listen to errors when using EventEmitter](#p20)
-
-[Handle uncaughtException](#p21)
-
-[Monitor the event loop](#p22)
-
-[Use gzip compression](#p23)
-
-[Perform application activity logging](#p24)
-
-[Perform input validation](#p25)
-
-[Adhere to general application security principles](#p26)
-
-<a name="p1"/>
-
-### Keep your packages up-to-date
+ 
+## Keep your packages up-to-date
 Security of your application depends directly on how secure the third-party packages you use in your application are.  Therefore, it is important to keep your packages up-to-date. [Node Security Platform (nsp)](https://github.com/nodesecurity/nsp) provides a CLI tool to identify known vulnerabilities in your application. You can install it easily with the following command: npm install –g nsp. Then you can check your projects by going to the directory where your package.json file is and executing nsp check command. In addition to nsp, you can also use [Synk](https://snyk.io/) to keep your packages safe.
 
-<a name="p2"/>
-
-### Use security-related headers
+## Use security-related headers
 There are several different HTTP headers that provide security against some common attack vectors. These are listed below:
 * __Strict-Transport-Security:__ HTTP Strict Transport Security (HSTS) dictates browsers that the application can only be accessed via HTTPS. This header takes two parameters: max-age to determine how long this configuration will be valid and includeSubDomains to state if subdomains are to be treated in the same way. In order to use it in your application, add the following codes:
 ```
@@ -139,9 +81,7 @@ Also you can lie about the technologies used with this header. For example, even
 app.use(helmet.hidePoweredBy({ setTo: ‘PHP 4.2.0’ }));
 ```
 
-<a name="p3"/>
-
-### Take precautions against brute-forcing
+## Take precautions against brute-forcing
 Brute-forcing is a common to threat to all web applications. Attackers use brute-forcing as a password guessing attack to obtain account passwords. Therefore, application developers should take precautions against brute-force attacks especially in login pages.  Node.js has several modules available for this purpose. Here is the express-bouncer module and its simple usage:
 ```
 var bouncer = require(‘express-bouncer’);
@@ -173,9 +113,7 @@ app.get(‘/captcha’, function (req, res) {
 
 Also, account lockout is a perfect solution to keep attackers away from your valid users. Account lockout is possible with many modules like mongoose. You can see this blog post (http://devsmash.com/blog/implementing-max-login-attempts-with-mongoose) to see how account locking is implemented in mongoose.
 
-<a name="p4"/>
-
-### Set cookie flags appropriately
+## Set cookie flags appropriately
 Generally, session information is sent over cookies in web applications. However, the usage of cookies can eliminate some attack vectors related to session management. There are some flags that can be set for each cookie. For session cookies, httpOnly and secure flags are very important. httpOnly flag prevents the cookie from being accessed by client-side JavaScript. This is an effective counter-measure for XSS attacks. Secure flag lets the cookie to be sent only if the communication is over HTTPS. Apart from these, there are other flags like domain, path and expires. Setting these flags appropriately is encouraged, but they are mostly related to cookie scope not the cookie security. Sample usage of these flags is given in the following example:
 ```
 var session = require(‘express-session’);
@@ -186,9 +124,7 @@ app.use(session({
 }));
 ```
 
-<a name="p5"/>
-
-### Use CSRF tokens
+## Use CSRF tokens
 Cross-Site Request Forgery (CSRF) aims to perform authorized action on behalf of an authenticated user, while the user is unaware of this action. CSRF attacks are generally performed for state-changing requests like password change, adding users or placing orders. Csurf is an express middleware that can be used to mitigate CSRF attacks. It can be used as follows:
 ```
 var csrf = require(‘csurf’);
@@ -205,34 +141,24 @@ After writing this code, you also need to add csrfToken to your HTML form. In ot
 <input type=”hidden” name=”_csrf” value=”{{ csrfToken }}”>
 ```
 
-<a name="p6"/>
-
-### Do not use dangerous functions
+## Do not use dangerous functions
 There are some JavaScript functions that are too dangerous to use. To the fullest possible extent, use of such functions and modules should be avoided. The first example is the eval() function. This function takes a string argument and executes it as any other JavaScript source code. This behavior inherently leads to remote code execution vulnerability. Similarly, calls to child_process.exec are also very dangerous. This function acts as a bash interpreter and sends its arguments to /bin/sh. By injecting input to this function, attackers can execute arbitrary commands on the server. Therefore, its use is highly discouraged.
 In addition to these functions, there are some modules that require special attention when being used. As an example, fs module handles filesystem operations. However, if improperly sanitized user input is fed into this module, your server’s content can be tampered. Similarly, vm module provides APIs for compiling and running code within V8 Virtual Machine contexts. Since it can perform dangerous actions by nature, it should be used within a sandbox.
 
-<a name="p7"/>
-
-### Stay away from evil regexes
+## Stay away from evil regexes
 Denial of Service (DoS) attacks aims to make one or more of an application’s resources or services unavailable for legitimate users. Some Regular Expression (Regex) implementations cause extreme situations that makes the application very slowly. Attackers can use such regex implementations to cause application to get into these extreme situations and hang for a long time.  Such regexes are called evil if it can be stuck on crafted input.  Generally, these regexes exploited by grouping with repetition and alternation with overlapping. (a+)+, (a|a?)+ are some examples of evil regexes. Fortunately, there is a Node.js module that can be used to check if a specific regex is evil or not. However, as it is stated in the module’s Github page, you cannot “be absolutely sure that this module will catch all exponential-time cases”. Its usage is as simple as follows:
 ```
 node safe.js <regex>
 node safe.js '(x+x+)+y'
 ```
 
-<a name="p8"/>
-
-### Remove unnecessary routes
+## Remove unnecessary routes
 A web application should not contain any page that is not used by users. Leaving such pages on the website can bring advantage to attackers. Such pages may increase the attack surface of the application. This principle is also valid for Node.js applications. All unused API routes should be disabled in Node.js applications. This occurs especially in frameworks like Sails and Feathers are used, as they automatically generate REST API endpoints. For example, in Sails, if a URL does not match a custom route, it may match one of the automatic routes and still generate a response. This situation may lead to results ranging from information leakage to arbitrary command execution. Therefore, before using such frameworks and modules, it is important to know the routes they automatically generate and remove or disable these routes. 
 
-<a name="p9"/>
-
-### Check authorization at each step
+## Check authorization at each step
 Authentication does not suffice to say an application is secure. Malicious users can still go through authentication and perform malicious activities in the application. In every application, principle of least privilege should be followed and regarding roles and users must be determined. Each user role should have access to the resources they must use. For your Node.js applications, you can use acl module to provide ACL (access control list) implementation. With this module, you can create roles and assign users to these roles.
 
-<a name="p10"/>
-
-### Do not block the event loop
+## Do not block the event loop
 Node.js is very different from common application platforms that use threads. Node.js has a single-thread event-driven architecture. By means of this architecture, throughput becomes high and programming model becomes simpler. Node.js is implemented around a non-blocking I/O event loop. With this event loop, there is no waiting on I/O or context switching. The event loop looks for events and dispatches them to handler functions. Because of this, when CPU intensive JavaScript operations are done, the event loop waits for them to finish. This is why such operations are called blocking. To overcome this problem, Node.js allows assigning callbacks to IO-blocked events. This way, the main application is not blocked and callbacks run asynchronously. Therefore, as a general principle, all blocking operations should be done asynchronously so that the event loop is not blocked. 
 
 Even if you perform blocking operations asynchronously, it is still possible that your application may not serve as expected. This happens if there is a code outside the callback which relies on the code within the callback to run first. For example, consider the following code:
@@ -246,34 +172,24 @@ fs.unlinkSync(‘/file.txt’);
 
 In the above example, unlinkSync function may run before the callback, which will delete the file before the desired actions on the file content is done. Such race conditions can also impact the security of your application. An example would be a scenario where authentication is performed in callback and authenticated actions are run synchronously. In order to eliminate such race conditions, you can write all operations that rely on each other in a single non-blocking function. By doing so, you can guarantee that all operations are executed in the correct order.
 
-<a name="p11"/>
-
-### Prevent HTTP Parameter Pollution
+## Prevent HTTP Parameter Pollution
 HTTP Parameter Pollution(HPP) is an attach in which attackers send multiple HTTP parameters with the same name and this causes your application to interpret them in an unpredictable way. When multiple parameter values are sent, Express populates them in an array. In order to solve this issue, you can use hpp module. This module puts array parameters in req.query and/or req.body aside and just selects the last parameter value. You can use it as follows:
 ```
 var hpp = require('hpp');
 app.use(hpp());
 ```
 
-<a name="p12"/>
-
-### Prefer certified modules
+## Prefer certified modules
 Security of a Node.js application depends on security of packages it makes use of. Therefore, packages should be chosen after a careful inspection. Because, a vulnerability in one of these packages may make your application open to any attacker. In order to use packages securely, you first need to know which packages you need to use and see if there is other packages installed apart from them. You should do this periodically, since your code changes in time and that may make some previously required packages unnecessary. Also it is important to check if the package you are about to use is commonly used within Node.js developers. If a package is preferred by most developers, chance to find a security whole in the package and fix it also increases. You can use the download rate of packages, which can be seen using npm-stat.com, to decide whether to use them or not. Another indication for a good package candidate is the last time it was updated. The more often a package is updated, the more secure it becomes.  
 A better way to ensure security of your packages is to use certified modules. [NodeSource](https://nodesource.com/products/certified-modules) provides packages that are monitored for security vulnerabilities. It provides a trust score for each package. This can be a good strategy when choosing third-party packages.
 
-<a name="p13"/>
-
-### Run security linters periodically
+## Run security linters periodically
 When developing code, keeping all security tips in mind can be really difficult. Also keeping all team members obey these rules is nearly impossible. This is why there are Static Analysis Security Testing (SAST) tools. These tools do not execute your code, but they simply look for patterns that can contain security risks. As JavaScript is a dynamic and loosely-typed language, linting tools are really essential in the software development life cycle. These tools should be run periodically and the findings should be audited. Another advantage of these tools is the feature that you can add custom rules for patterns that you may see dangerous. [ESLint](https://eslint.org/) and [JSHint](http://jshint.com/) are commonly used SAST tools for JavaScript linting.
 
-<a name="p14"/>
-
-### Use flat Promise chains
+## Use flat Promise chains
 Asynchronous callback functions are one of the strongest features of Node.js. However, increasing layers of nesting within callback functions can become a problem. Any multistage process can become nested 10 or more levels deep. This problem is called as Pyramid of Doom or Callback Hell. In such a code, the errors and results get lost within the callback. Promises are a good way to write asynchronous code without getting into nested pyramids. Promises provide top-down execution while being asynchronous by delivering errors and results to next .then function. Another advantage of Promises is the way Promises handle the errors. If an error occurs in a Promise class, it skips over the .then functions and invokes the first .catch function it finds. This way Promises bring a higher assurance of capturing and handling errors. As a principle, you can make all your asynchronous code(apart from emitters) return promises. However, it should be noted that Promise calls can also become a pyramid. In order to completely stay away from callback hells, flat Promise chains should be used. If the module you are using does not support Promises, you can convert base object to a Promise by using Promise.promisifyAll() function. 
 
-<a name="p15"/>
-
-### Return sanitized user objects
+## Return sanitized user objects
 Information about the users of an application is among the most critical information about the application. Therefore, user information should be stored on a different database. User tables generally include fields like id, username, full name, email address, birth date, credit card number and in some cases social security numbers. Therefore, when querying and using user objects, you need to return only needed fields as it may be vulnerable to personal information disclosure. This is also correct for other objects stored on the database. If you just need a certain field of an object, you should never return it with all of its fields. As an example you can use a function like the following whenever you need to get information on a user. By doing so, you can only return the fields that are needed for your specific operation. In other words, if you only need to list names of the users available, you are not returning their email addresses or credit card numbers in addition to their full names. 
 ```
 exports.sanitizeUser = function(user) {
@@ -285,9 +201,7 @@ exports.sanitizeUser = function(user) {
 };
 ```
 
-<a name="p16"/>
-
-### Set request size limits
+## Set request size limits
 Buffering and parsing of request bodies can be cumbersome for the server. If there is no limit on the size of requests, attackers can send request with large request bodies so that they can exhaust server memory or fill disk space. However, fixing a request size limit for all requests may not be the correct behavior, since some requests like those for uploading a file to the server have more content to carry on the request body. Also, input with a JSON type is more dangerous than a multipart input, since parsing JSON is a blocking operation. Therefore, you should set request size limits for different content types. You can accomplish this very easily with express middlewares as follows:
 ```
 app.use(express.urlencoded({ limit: “1kb” }));
@@ -296,14 +210,10 @@ app.use(express.multipart({ limit:”10mb” }));
 app.use(express.limit(“5kb”)); // this will be valid for every other content type
 ```
 
-<a name="p17"/>
-
-### Use strict mode
+## Use strict mode
 JavaScript has some unsafe features that lies within the language itself. In order to remove these features, ES5 included a strict mode for developers. With this mode, errors that were silent previously are thrown. It also restricted optimizations for JavaScript engines. With strict mode, previously accepted bad syntax causes real errors. use "use strict". Because of these improvements, you should always use strict mode in your application. In order to enable strict mode, you just need to write _‘use strict’;_ on top of your code.
 
-<a name="p18"/>
-
-### Use object property descriptors
+## Use object property descriptors
 Object properties include 3 hidden attributes: writable (if false, property value cannot be changed), enumerable (if false, property cannot be used in for loops) and configurable (if false, property cannot be deleted). When defining an object property through assignment, these three hidden attributes are set to true by default. These properties can be set as follows:
 ```
 var o = {};
@@ -317,15 +227,11 @@ Object.defineProperty(o, “a”, {
 
 Apart from these, there are some special functions for object attributes. Object.preventExtensions() prevents new properties from being added to the object.
 
-<a name="p19"/>
-
-### Handle errors in asynchronous calls
+## Handle errors in asynchronous calls
 Errors that occur within asynchronous callbacks can be easily forgettable. Therefore, as a general principle first argument to the asynchronous calls should be an Error object. Also, express routes handle errors itself, but it should be always remembered that errors occurred in asynchronous calls made within express routes are not handled, unless an Error object is sent as a first argument. 
 Errors in these callbacks can be propagated as many times as possible. Each callback that the error has been propagated to can ignore, handle or propagate the error.
 
-<a name="p20"/>
-
-### Listen to errors when using EventEmitter
+## Listen to errors when using EventEmitter
 When using EventEmitter, errors can occur anywhere in the event chain. Normally, if an error occurs in an EventEmitter object, an error event with an Error object as its argument is called. However, if there are no attached listeners to that error event, the Error object that is sent as argument is thrown and becomes an uncaught exception. In short, if you do not handle errors within an EventEmitter object properly, these unhandled errors may crash your application. Therefore, you should always listen to error events when using EventEmitter objects.
 ```
 var events = require(‘events’);
@@ -343,9 +249,7 @@ emitter.on(‘error’, function(err){
 });
 ```
 
-<a name="p21"/>
-
-### Handle uncaughtException
+## Handle uncaughtException
 Node.js behavior for uncaught exceptions is to print current stack trace and then terminate the thread. However, Node.js allows customization of this behavior. It provides a global object named process which is available to all Node.js applications. It is an EventEmitter object  and in case of an uncaught exception, “uncaughtException” event gets emitted and it is brought up to the main event loop. In order to provide a custom behavior for uncaught exceptions, you can bind to this event. However, resuming the application after such an uncaught exception can lead to further problems. Therefore, if you do not want to miss any uncaught exception, you should bind to uncaughtException event and cleanup any allocated resources like file descriptors, handles and similar before shutting down the process. Resuming the application is strongly discouraged as the application will be in an unknown state.
 ```
 process.on(“uncaughtException”, function(err) {
@@ -355,9 +259,7 @@ process.on(“uncaughtException”, function(err) {
 });
 ```
 
-<a name="p22"/>
-
-### Monitor the event loop
+## Monitor the event loop
 When your application server is under heavy network traffic, it may not be able to serve its users. This is essentially a type of Denial of Service (DoS) attack. Toobusy module enables you to monitor the event loop’s responsiveness. It keeps track of lags which is lon requests wait in the queue. When it goes beyond a certain threshold, this module can indicate your server is too busy. In that case, you can stop processing incoming requests and send them 503 Server Too Busy message so that your application stay responsive. Sample use of toobusy module is shown here:
 ```
 var toobusy = require(‘toobusy’);
@@ -373,9 +275,7 @@ app.use(function(req, res, next) {
 });
 ```
 
-<a name="p23"/>
-
-### Use gzip compression
+## Use gzip compression
 Gzip compressing can significantly decrease the size of the response body and thus it can enhance the speed and performance of your application. In order to use gzip compression in your application, you can use the following code: 
 ```
 var compression = require(‘compression’);
@@ -384,9 +284,7 @@ var app = express();
 app.use(compression());
 ```
 
-<a name="p24"/>
-
-### Perform application activity logging
+## Perform application activity logging
 Logging application activity is an encouraged good practice. It makes it easier to debug any errors encountered during application runtime. It is also useful for security concerns, since it can be used during incident response. Also, these logs can be used to feed Intrusion Detection/Prevention Systems (IDS/IPS). In Node.js, there are some modules like Winston or Bunyan to perform application activity logging. These modules enable streaming and querying logs. Also, they provide a way to handle uncaught exceptions. With the following code, you can log application activities in both console and a desired log file.
 ```
 var logger = new (Winston.Logger) ({
@@ -400,12 +298,8 @@ var logger = new (Winston.Logger) ({
 
 Also, you can provide different transports so that you can save errors to a separate log file and general application logs to a different log file. 
 
-<a name="p25"/>
-
-### Perform input validation
+## Perform input validation
 Input validation is a crucial part of application security. Input validation failures can results in many different types of application attacks. These include SQL Injection, Cross-Site Scripting, Command Injection, Local/Remote File Inclusion, Denial of Service, Directory Traversal, LDAP Injection and many other injection attacks. In order to avoid these attacks, input to your application should be sanitized first. The best input validation technique is to use a white list of accepted inputs. However, if this is not possible, input should be first checked against expected input scheme and dangerous inputs should be escaped. In order to ease input validation in Node.js applications, there are some modules like validator and mongo-express-sanitize. 
 
-<a name="p26"/>
-
-### Adhere to general application security principles
+## Adhere to general application security principles
 This list has mainly focused on issues that are common in Node.js applications. Also, recommendations against these issues are given specific to Node.js environment. Apart from these, there are general principles that apply to web applications regardless of technologies used in application server. You should also keep those principles in mind while developing your applications. A very good reference document on these principles is developed and maintained by OWASP. You can always refer to [OWASP Web Application Security Testing Cheat Sheet](https://www.owasp.org/index.php/Web_Application_Security_Testing_Cheat_Sheet) to learn about vulnerabilities that exist in web applications and the ways to resolve these vulnerabilities.
