@@ -3,7 +3,7 @@ This document lists the things one can use when developing secure Node.js applic
 
  
 ## Keep your packages up-to-date
-Security of your application depends directly on how secure the third-party packages you use in your application are.  Therefore, it is important to keep your packages up-to-date. [Node Security Platform (nsp)](https://github.com/nodesecurity/nsp) provides a CLI tool to identify known vulnerabilities in your application. You can install it easily with the following command: npm install –g nsp. Then you can check your projects by going to the directory where your package.json file is and executing nsp check command. In addition to nsp, you can also use [Synk](https://snyk.io/) to keep your packages safe.
+Security of your application depends directly on how secure the third-party packages you use in your application are.  Therefore, it is important to keep your packages up-to-date. [Node Security Platform (nsp)](https://github.com/nodesecurity/nsp) provides a CLI tool to identify known vulnerabilities in your application. You can install it easily with the following command: npm install –g nsp. Then you can check your projects by going to the directory where your package.json file is and executing nsp check command. In addition to nsp, you can also use [Snyk](https://snyk.io/) to keep your packages safe.
 
 ## Use security-related headers
 There are several different HTTP headers that provide security against some common attack vectors. These are listed below:
@@ -13,7 +13,7 @@ app.use(helmet.hsts()); // default configuration
 app.use(helmet.hsts(<max-age>, <includeSubdomains>)); // custom configuration
 ```
 
-* __X-Frame-Options:__ It determines if a page can be loaded via a <frame> or an <iframe> element. Allowing to do so may result in clickjacking attacks which aims to deceive users to click on something different than they perceive to be clicking on. This header has 3 directives: DENY to never allow framing, SAMEORIGIN to only allow framing within the same origin and ALLOW-FROM to only allow framing from a specified URI. These behaviors can be achieved with helmet module as follows:
+* __X-Frame-Options:__ It determines if a page can be loaded via a <frame> or an <iframe> element. Allowing to do so may result in clickjacking attacks which aims to deceive users to click on something different than they perceive to be clicking on. This header has 3 directives: DENY to never allow framing, SAMEORIGIN to only allow framing within the same origin and ALLOW-FROM to only allow framing from specified URIs. These behaviors can be achieved with helmet module as follows:
 ```
 app.use(hemlet.xframe()); // default behavior (DENY)
 helmet.xframe(‘sameorigin’); // SAMEORIGIN
@@ -31,7 +31,7 @@ app.use(xssFilter());
 app.use(helmet.noSniff());
 ```
 
-* __Content-Security-Policy:__ Content Security Policy is developed to reduce the risk of attacks like XSS. Basically, it allows content from a whitelist you decide. Other contents from different sources are not accepted if Content-Security-Policy headers are set correctly. It has several directives each of which prohibits loading specific type of a content. These are connect-src, font-src, frame-src, img-src, media-src, object-src, script-src, style-src and default-src. These can be assigned to self, none, unsafe-inline or unsafe-eval. You can implement these settings in your application as follows:
+* __Content-Security-Policy:__ Content Security Policy is developed to reduce the risk of attacks like XSS and Clickjacking. Basically, it allows content from a whitelist you decide. Other contents from different sources are not accepted if Content-Security-Policy headers are set correctly. It has several directives each of which prohibits loading specific type of a content. These are connect-src, font-src, frame-src, img-src, media-src, object-src, script-src, style-src and default-src. These can be assigned to self, none, unsafe-inline or unsafe-eval. You can implement these settings in your application as follows:
 ```
 app.use(helmet.csp.policy({
 	defaultPolicy: {
@@ -48,12 +48,12 @@ app.use(helmet.noCache());
 ```
 The above code sets Cache-Control, Surrogate-Control, Pragma and Expires headers accordingly.
 
-* __x-Download-Options:__ This header prevents Internet Explorer from executing downloaded files in the site’s context. This achieved with noopen directive. You can do so with the following piece of code:
+* __x-Download-Options:__ This header prevents Internet Explorer from executing downloaded files in the site’s context. This is achieved with noopen directive. You can do so with the following piece of code:
 ```
 app.use(helmet.ieNoOpen());
 ```
 
-* __Expect-CT:__ Certificate Transparency is a new mechanism developed to fix some structural problems regarding current SSL certificate system. It has three directives. Enforce directive dictates if the policy should be enforced or be used in report-only mode. Max-age directive specifies how long this setting will be valid. Report-uri directive specifies where the browser should send invalid CT information reports. These can be implemented in your application as follows:
+* __Expect-CT:__ Certificate Transparency is a new mechanism developed to fix some structural problems regarding current SSL infrastructure. It has three directives. Enforce directive dictates if the policy should be enforced or be used in report-only mode. Max-age directive specifies how long this setting will be valid. Report-uri directive specifies where the browser should send invalid CT information reports. These can be implemented in your application as follows:
 ```
 var expectCt = require(‘expect-ct’);
 app.use(expectCt({ maxAge: 123 }));
@@ -71,7 +71,7 @@ app.use(helmet.hpkp({
 }));
 ```
 
-* __X-Powered-By:__ X-Powered-By header is used to inform what technology is used in the server side. This is an unnecessary information leakage, so it should be removed from your application. To do so, you can use the hidePoweredBy as follows:
+* __X-Powered-By:__ X-Powered-By header is used to inform what technology is used in the server side. This is an unnecessary header causing information leakage, so it should be removed from your application. To do so, you can use the hidePoweredBy as follows:
 ```
 app.use(helmet.hidePoweredBy());
 ```
@@ -82,7 +82,7 @@ app.use(helmet.hidePoweredBy({ setTo: ‘PHP 4.2.0’ }));
 ```
 
 ## Take precautions against brute-forcing
-Brute-forcing is a common to threat to all web applications. Attackers use brute-forcing as a password guessing attack to obtain account passwords. Therefore, application developers should take precautions against brute-force attacks especially in login pages.  Node.js has several modules available for this purpose. Here is the express-bouncer module and its simple usage:
+Brute-forcing is a common threat to all web applications. Attackers can use brute-forcing as a password guessing attack to obtain account passwords. Therefore, application developers should take precautions against brute-force attacks especially in login pages.  Node.js has several modules available for this purpose. Here is the express-bouncer module and its simple usage:
 ```
 var bouncer = require(‘express-bouncer’);
 bouncer.whitelist.push(‘127.0.0.1’); // whitelist an IP address
@@ -100,7 +100,7 @@ app.post(“/login”, bouncer.block, function(req, res) {
 ```
 
 Apart from express-bouncer modules, there are several other modules that aims to mitigate brute-forcing. Ratelimiter and express-brute are examples of these modules. 
-Captcha usage is also another common mechanism used against brute-forcing. There are modules developed for Node.js captchas. A common module used captcha in Node.js applications is svg-captcha. It can be used as follows:
+CAPTCHA usage is also another common mechanism used against brute-forcing. There are modules developed for Node.js CAPTCHAs. A common module used in Node.js applications is svg-captcha. It can be used as follows:
 ```
 var svgCaptcha = require(‘svg-captcha’);
 app.get(‘/captcha’, function (req, res) {
@@ -111,10 +111,10 @@ app.get(‘/captcha’, function (req, res) {
 });
 ```
 
-Also, account lockout is a perfect solution to keep attackers away from your valid users. Account lockout is possible with many modules like mongoose. You can see this blog post (http://devsmash.com/blog/implementing-max-login-attempts-with-mongoose) to see how account locking is implemented in mongoose.
+Also, account lockout is a recommended solution to keep attackers away from your valid users. Account lockout is possible with many modules like mongoose. You can see this blog post (http://devsmash.com/blog/implementing-max-login-attempts-with-mongoose) to see how account locking is implemented in mongoose.
 
 ## Set cookie flags appropriately
-Generally, session information is sent over cookies in web applications. However, the usage of cookies can eliminate some attack vectors related to session management. There are some flags that can be set for each cookie. For session cookies, httpOnly and secure flags are very important. httpOnly flag prevents the cookie from being accessed by client-side JavaScript. This is an effective counter-measure for XSS attacks. Secure flag lets the cookie to be sent only if the communication is over HTTPS. Apart from these, there are other flags like domain, path and expires. Setting these flags appropriately is encouraged, but they are mostly related to cookie scope not the cookie security. Sample usage of these flags is given in the following example:
+Generally, session information is sent over cookies in web applications. However, the usage of cookies can eliminate some attack vectors related to session management. There are some flags that can be set for each cookie. For session cookies, httpOnly, Secure and SameSite flags are very important. httpOnly flag prevents the cookie from being accessed by client-side JavaScript. This is an effective counter-measure for XSS attacks. Secure flag lets the cookie to be sent only if the communication is over HTTPS. SameSite flag can prevent cookies from being sent in cross-site requests which helps protect against Cross-Site Request Forgery (CSRF) attacks. Apart from these, there are other flags like domain, path and expires. Setting these flags appropriately is encouraged, but they are mostly related to cookie scope not the cookie security. Sample usage of these flags is given in the following example:
 ```
 var session = require(‘express-session’);
 app.use(session({
@@ -125,7 +125,7 @@ app.use(session({
 ```
 
 ## Use CSRF tokens
-Cross-Site Request Forgery (CSRF) aims to perform authorized action on behalf of an authenticated user, while the user is unaware of this action. CSRF attacks are generally performed for state-changing requests like password change, adding users or placing orders. Csurf is an express middleware that can be used to mitigate CSRF attacks. It can be used as follows:
+Cross-Site Request Forgery (CSRF) aims to perform authorized actions on behalf of an authenticated user, while the user is unaware of this action. CSRF attacks are generally performed for state-changing requests like password change, adding users or placing orders. Csurf is an express middleware that can be used to mitigate CSRF attacks. It can be used as follows:
 ```
 var csrf = require(‘csurf’);
 csrfProtection = csrf({ cookie: true });
@@ -136,7 +136,7 @@ app.post(‘/process’, parseForm, csrfProtection, function(req, res) {
 	res.send(‘data is being processed’);
 });
 ```
-After writing this code, you also need to add csrfToken to your HTML form. In other 	words, you need to add the following line in your view class:
+After writing this code, you also need to add csrfToken to your HTML form, which can be easily done as follows:
 ```
 <input type=”hidden” name=”_csrf” value=”{{ csrfToken }}”>
 ```
@@ -146,14 +146,14 @@ There are some JavaScript functions that are too dangerous to use. To the fulles
 In addition to these functions, there are some modules that require special attention when being used. As an example, fs module handles filesystem operations. However, if improperly sanitized user input is fed into this module, your server’s content can be tampered. Similarly, vm module provides APIs for compiling and running code within V8 Virtual Machine contexts. Since it can perform dangerous actions by nature, it should be used within a sandbox.
 
 ## Stay away from evil regexes
-Denial of Service (DoS) attacks aims to make one or more of an application’s resources or services unavailable for legitimate users. Some Regular Expression (Regex) implementations cause extreme situations that makes the application very slowly. Attackers can use such regex implementations to cause application to get into these extreme situations and hang for a long time.  Such regexes are called evil if it can be stuck on crafted input.  Generally, these regexes exploited by grouping with repetition and alternation with overlapping. (a+)+, (a|a?)+ are some examples of evil regexes. Fortunately, there is a Node.js module that can be used to check if a specific regex is evil or not. However, as it is stated in the module’s Github page, you cannot “be absolutely sure that this module will catch all exponential-time cases”. Its usage is as simple as follows:
+Denial of Service (DoS) attack aims to make one or more of an application’s resources or services unavailable for its legitimate users. Some Regular Expression (Regex) implementations cause extreme situations that makes the application very slow. Attackers can use such regex implementations to cause application to get into these extreme situations and hang for a long time.  Such regexes are called evil if application can be stuck on crafted input.  Generally, these regexes are exploited by grouping with repetition and alternation with overlapping. (a+)+, (a|a?)+ are some examples of evil regexes. Fortunately, there is a Node.js module that can be used to check if a specific regex is evil or not. However, as it is stated in the module’s Github page, you cannot “be absolutely sure that this module will catch all exponential-time cases”. Its usage is as simple as follows:
 ```
 node safe.js <regex>
 node safe.js '(x+x+)+y'
 ```
 
 ## Remove unnecessary routes
-A web application should not contain any page that is not used by users. Leaving such pages on the website can bring advantage to attackers. Such pages may increase the attack surface of the application. This principle is also valid for Node.js applications. All unused API routes should be disabled in Node.js applications. This occurs especially in frameworks like Sails and Feathers are used, as they automatically generate REST API endpoints. For example, in Sails, if a URL does not match a custom route, it may match one of the automatic routes and still generate a response. This situation may lead to results ranging from information leakage to arbitrary command execution. Therefore, before using such frameworks and modules, it is important to know the routes they automatically generate and remove or disable these routes. 
+A web application should not contain any page that is not used by users. Leaving such pages on the website can bring advantage to attackers. Such pages may increase the attack surface of the application. This principle is also valid for Node.js applications. All unused API routes should be disabled in Node.js applications. This occurs especially in frameworks like Sails and Feathers, as they automatically generate REST API endpoints. For example, in Sails, if a URL does not match a custom route, it may match one of the automatic routes and still generate a response. This situation may lead to results ranging from information leakage to arbitrary command execution. Therefore, before using such frameworks and modules, it is important to know the routes they automatically generate and remove or disable these routes. 
 
 ## Check authorization at each step
 Authentication does not suffice to say an application is secure. Malicious users can still go through authentication and perform malicious activities in the application. In every application, principle of least privilege should be followed and regarding roles and users must be determined. Each user role should have access to the resources they must use. For your Node.js applications, you can use acl module to provide ACL (access control list) implementation. With this module, you can create roles and assign users to these roles.
@@ -173,7 +173,7 @@ fs.unlinkSync(‘/file.txt’);
 In the above example, unlinkSync function may run before the callback, which will delete the file before the desired actions on the file content is done. Such race conditions can also impact the security of your application. An example would be a scenario where authentication is performed in callback and authenticated actions are run synchronously. In order to eliminate such race conditions, you can write all operations that rely on each other in a single non-blocking function. By doing so, you can guarantee that all operations are executed in the correct order.
 
 ## Prevent HTTP Parameter Pollution
-HTTP Parameter Pollution(HPP) is an attach in which attackers send multiple HTTP parameters with the same name and this causes your application to interpret them in an unpredictable way. When multiple parameter values are sent, Express populates them in an array. In order to solve this issue, you can use hpp module. This module puts array parameters in req.query and/or req.body aside and just selects the last parameter value. You can use it as follows:
+HTTP Parameter Pollution(HPP) is an attack in which attackers send multiple HTTP parameters with the same name and this causes your application to interpret them in an unpredictable way. When multiple parameter values are sent, Express populates them in an array. In order to solve this issue, you can use hpp module. This module puts array parameters in req.query and/or req.body aside and just selects the last parameter value. You can use it as follows:
 ```
 var hpp = require('hpp');
 app.use(hpp());
@@ -260,7 +260,7 @@ process.on(“uncaughtException”, function(err) {
 ```
 
 ## Monitor the event loop
-When your application server is under heavy network traffic, it may not be able to serve its users. This is essentially a type of Denial of Service (DoS) attack. Toobusy module enables you to monitor the event loop’s responsiveness. It keeps track of lags which is lon requests wait in the queue. When it goes beyond a certain threshold, this module can indicate your server is too busy. In that case, you can stop processing incoming requests and send them 503 Server Too Busy message so that your application stay responsive. Sample use of toobusy module is shown here:
+When your application server is under heavy network traffic, it may not be able to serve its users. This is essentially a type of Denial of Service (DoS) attack. Toobusy module allows you to monitor the event loop. It keeps track of lags and when it goes beyond a certain threshold, this module can indicate your server is too busy. In that case, you can stop processing incoming requests and send them 503 Server Too Busy message so that your application stay responsive. Sample use of toobusy module is shown here:
 ```
 var toobusy = require(‘toobusy’);
 var express = require(‘express’);
